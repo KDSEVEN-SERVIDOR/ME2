@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verificador TIM</title>
+    <style>
+        body { font-family: Arial; max-width: 500px; margin: 0 auto; padding: 20px; }
+        input, button { padding: 10px; width: 100%; margin-bottom: 10px; }
+        #result { padding: 15px; margin-top: 20px; border-radius: 5px; }
+        .live { background: #d4edda; color: #155724; }
+        .die { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>Verificar CPF na TIM</h1>
+    <form id="checkForm">
+        <input type="text" name="key" placeholder="Sua chave de acesso" required>
+        <input type="text" name="cpf" placeholder="CPF (apenas números)" required>
+        <button type="submit">Verificar</button>
+    </form>
+    
+    <div id="result" style="display:none;"></div>
+    
+    <script>
+        document.getElementById('checkForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            
+            const response = await fetch('/check', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
+            const resultDiv = document.getElementById('result');
+            
+            if (result.error) {
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'die';
+                resultDiv.innerHTML = `ERRO: ${result.error}`;
+                return;
+            }
+            
+            resultDiv.style.display = 'block';
+            resultDiv.className = result.status.toLowerCase();
+            
+            if (result.status === 'LIVE') {
+                resultDiv.innerHTML = `
+                    <strong>STATUS: LIVE</strong><br>
+                    Email: ${result.email || 'Não encontrado'}
+                `;
+            } else {
+                resultDiv.innerHTML = '<strong>STATUS: DIE</strong> - CPF não encontrado';
+            }
+        });
+    </script>
+</body>
+</html>
